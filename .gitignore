@@ -1,0 +1,21 @@
+# Byte-compiled and cached files
+__pycache__/
+*.py[co]
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# IDE and editor files
+.idea/  # PyCharm
+*.sublime-project
+*.sublime-workspace
+.vscode/
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Test-related files
+.pytest_cache/
