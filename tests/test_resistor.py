@@ -1,5 +1,9 @@
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 import pytest
-from src.ee_tools.components import Resistor
+from ee_tools.components import Resistor
 
 @pytest.fixture
 def resistor_100_ohm():
@@ -97,7 +101,19 @@ class TestResistor:
         # P = V^2 / R = (10)^2 / 100 = 100 / 100 = 1 W
         assert resistor_100_ohm._calculate_power_from_voltage(voltage=10) == pytest.approx(1.0)
         
-    def test_current_from_voltage(self, resistor_100_ohm):
+    def test_current_from_voltage(self, resistor_100_ohm, resistor_1k_ohm):
         """Test the current_from_voltage method."""
         # I = V / R = 10 / 100 = 0.1 A
         assert resistor_100_ohm.current_from_voltage(voltage=10) == pytest.approx(0.1)
+        
+        # Test with 1k ohm resistor: I = V / R = 5 / 1000 = 0.005 A
+        assert resistor_1k_ohm.current_from_voltage(voltage=5) == pytest.approx(0.005)
+        
+        # Test with zero voltage
+        assert resistor_100_ohm.current_from_voltage(voltage=0) == pytest.approx(0.0)
+    
+    def test_current_from_voltage_zero_resistance(self):
+        """Test that current_from_voltage raises an error for zero resistance."""
+        # This should raise a ValueError since resistance cannot be zero
+        with pytest.raises(ValueError):
+            Resistor(resistance=0)

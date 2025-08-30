@@ -8,10 +8,10 @@ setuptools.setup(
     version="0.1.0",
     author="Zeh Brien",
     author_email="zehbrien@gmail.com",
-    description="",
+    description="A Python-based software for simulating electronics circuits via code.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="A Python-based software for simulating electronics circuits via code.",
+    url="https://github.com/Brien123/PyEEKit.git",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
