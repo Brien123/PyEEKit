@@ -195,11 +195,97 @@ class CurrentSource(Component):
         """Current sources have infinite impedance (zero conductance)"""
         return 0.0
         
-# class Capacitor(Component):
-#     def __init__(self, capacitance: float, name: str = "C", power_rating: float = 0.25, tolerance: float = 0.05):
-#         super().__init__(name)
-#         self.capacitance = capacitance
-#         self.power_rating = power_rating
-#         self.tolerance = tolerance
+class Capacitor(Component):
+    def __init__(self, capacitance: float, name: str = "C", voltage_rating: float = 0.25, tolerance: float = 0.05):
+        super().__init__(name)
+        if capacitance <= 0:
+            raise ValueError("Capacitance cannot be less than or equal to zero")
+        if voltage_rating <= 0:
+            raise ValueError("Voltage rating cannot be less than or equal to zero")
+        if tolerance <= 0:
+            raise ValueError("Tolerance cannot be less than or equal to zero")
+            
+        self.capacitance = capacitance
+        self.voltage_rating = voltage_rating
+        self.tolerance = tolerance
         
-#     def 
+    def __str__(self):
+        return f"{self.name}({self.capacitance}F)"
+    
+    def __repr__(self):
+        return f"{self.name}({self.capacitance}F)"
+        
+    def get_voltage(self, node_voltages: Dict[Node, float]) -> float:
+        """Get voltage across component given node voltages"""
+        voltage = super().get_voltage(node_voltages)
+        if abs(voltage) > self.voltage_rating:
+            self.logger.warning(f"Voltage {voltage} V exceeds voltage rating {self.voltage_rating} V for capacitor {self.name}")
+        return voltage
+        
+    def get_conductance(self) -> float:
+        """Capacitors are open circuits in DC, so they have zero conductance"""
+        return 0.0
+    
+    def stored_energy(self, voltage: float) -> float:
+        """Calculate the energy stored in the capacitor (W_C = 0.5 * C * V^2)"""
+        return 0.5 * self.capacitance * (voltage ** 2)
+    
+    def capacitance_bounds(self) -> tuple:
+        """Calculate the min/max capacitance based on tolerance"""
+        return (self.capacitance * (1 - self.tolerance), self.capacitance * (1 + self.tolerance))
+    
+    # Methods for AC analysis (not implemented here, but placeholders)
+    def get_reactance(self, frequency: float) -> float:
+        """Get capacitive reactance (X_C = 1 / (2 * pi * f * C))"""
+        if frequency == 0:
+            return float('inf') # Open circuit at DC
+        return 1.0 / (2 * 3.1415926535 * frequency * self.capacitance)
+    
+    def get_impedance(self, frequency: float) -> complex:
+        """Get complex impedance (Z_C = -j * X_C)"""
+        reactance = self.get_reactance(frequency)
+        return complex(0, -reactance)
+    
+class Inductor(Component):
+    def __init__(self, inductance: float, name: str = "L", current_rating: float = 1.0, tolerance: float = 0.05):
+        super().__init__(name)
+        if inductance <= 0:
+            raise ValueError("Inductance cannot be less than or equal to zero")
+        if current_rating <= 0:
+            raise ValueError("Current rating cannot be less than or equal to zero")
+        if tolerance <= 0:
+            raise ValueError("Tolerance cannot be less than or equal to zero")
+
+        self.inductance = inductance
+        self.current_rating = current_rating
+        self.tolerance = tolerance
+        
+    def __str__(self):
+        return f"{self.name}({self.inductance}H)"
+    
+    def __repr__(self):
+        return f"{self.name}({self.inductance}H)"
+
+    def get_conductance(self) -> float:
+        """Inductors are short circuits in DC, so they have infinite conductance"""
+        return float('inf')
+        
+    def stored_energy(self, current: float) -> float:
+        """Calculate the energy stored in the inductor (W_L = 0.5 * L * I^2)"""
+        if abs(current) > self.current_rating:
+            self.logger.warning(f"Current {current} A exceeds current rating {self.current_rating} A for inductor {self.name}")
+        return 0.5 * self.inductance * (current ** 2)
+    
+    def inductance_bounds(self) -> tuple:
+        """Calculate the min/max inductance based on tolerance"""
+        return (self.inductance * (1 - self.tolerance), self.inductance * (1 + self.tolerance))
+
+    # Methods for AC analysis (not implemented here, but placeholders)
+    def get_reactance(self, frequency: float) -> float:
+        """Get inductive reactance (X_L = 2 * pi * f * L)"""
+        return 2 * 3.1415926535 * frequency * self.inductance
+    
+    def get_impedance(self, frequency: float) -> complex:
+        """Get complex impedance (Z_L = +j * X_L)"""
+        reactance = self.get_reactance(frequency)
+        return complex(0, reactance)
